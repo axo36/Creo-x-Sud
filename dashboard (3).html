@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CREO × Au Grès du Sud — Centre de contrôle</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+CiAgPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTEiIGZpbGw9IiMwYTBiMGMiLz4KICA8Y2lyY2xlIGN4PSIyNCIgY3k9IjI0IiByPSIxNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTZlMzRkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjY2IDEwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtNDAgMjQgMjQpIi8+CiAgPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iOS41IiBmaWxsPSJub25lIiBzdHJva2U9IiNiNTY1MmMiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC44NSIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iMjQiIHI9IjMuNCIgZmlsbD0iIzM0ZDM5OSIvPgo8L3N2Zz4K">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --em:#34d399;
+    --em-bright:#7cf0c2;
+    --lime:#a6e34d;
+    --clay:#c17a42;
+    --bg:#08090a;
+    --panel:#0e0f11;
+    --panel2:#131417;
+    --border:#212327;
+    --border-hi:#2c2f34;
+    --text:#eceeec;
+    --text2:#8b9290;
+    --text3:#54585a;
+    --red:#e2716a;
+    --warn:#e0c15a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .heading{font-family:'Space Grotesk',sans-serif;}
+  a{color:inherit;}
+
+  /* ---------- App shell ---------- */
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar (desktop) */
+  .sidebar{
+    width:222px;flex-shrink:0;position:sticky;top:0;height:100vh;
+    background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 6px 20px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .brand svg{width:34px;height:34px;flex-shrink:0;}
+  .brand .name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.92rem;line-height:1.15;}
+  .brand .name span{color:var(--lime);}
+  .brand .sub{font-size:.6rem;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+
+  .navitem{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+    color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;margin-bottom:3px;
+    font-family:'Space Grotesk',sans-serif;transition:.15s;border:1px solid transparent;
+  }
+  .navitem .ic{width:16px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.8rem;}
+  .navitem:hover{background:var(--panel2);color:var(--text);}
+  .navitem.active{background:rgba(52,211,153,0.09);color:var(--em-bright);border-color:rgba(52,211,153,0.25);}
+
+  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+  .live-box{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--text2);}
+  .live-dot{
+    display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--em);
+    box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 1.8s infinite;margin-right:6px;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(52,211,153,.55);}
+    70%{box-shadow:0 0 0 7px rgba(52,211,153,0);}
+    100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}
+  }
+
+  /* Mobile top bar */
+  .topbar{display:none;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:20;}
+  .topbar svg{width:28px;height:28px;}
+  .topbar .name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.85rem;}
+  .topbar .name span{color:var(--lime);}
+  .topbar .live-box{margin-left:auto;}
+
+  /* Bottom tab bar (mobile) */
+  .bottomnav{
+    display:none;position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:var(--panel);border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .bottomnav-row{display:flex;justify-content:space-around;}
+  .bottomnav .navitem{flex-direction:column;gap:3px;font-size:.6rem;padding:6px 4px;text-align:center;flex:1;margin-bottom:0;border-radius:8px;}
+  .bottomnav .navitem .ic{font-size:1.05rem;}
+
+  main{flex:1;min-width:0;}
+  .main-inner{max-width:1040px;margin:0 auto;padding:26px 22px 60px;}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .page-head{margin-bottom:22px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--em-bright);font-weight:600;
+  }
+  h1{font-family:'Space Grotesk',sans-serif;font-size:1.7rem;font-weight:700;margin:5px 0 4px;letter-spacing:-.3px;}
+  .page-head p{color:var(--text2);font-size:.82rem;max-width:520px;margin:0;}
+
+  /* ---------- Shared components ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+  .stat{background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:15px 16px;transition:.15s;}
+  .stat:hover{border-color:var(--border-hi);}
+  .stat .num{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--em-bright);}
+  .stat .label{font-size:.63rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+  .stat.lime .num{color:var(--lime);}
+
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px;}
+  .strip .stat{border-left:3px solid var(--em);}
+
+  .alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:26px;}
+  .alert{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--em);border-radius:10px;padding:10px 14px;font-size:.8rem;}
+  .alert.warn{border-left-color:var(--warn);}
+  .alert.good{border-left-color:var(--lime);}
+  .alert .ico{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.75rem;margin-top:1px;}
+  .alert.warn .ico{color:var(--warn);}
+  .alert.good .ico{color:var(--lime);}
+  .alert.info .ico{color:var(--em-bright);}
+  .alert .body b{color:var(--text);}
+  .alert .body span{color:var(--text2);}
+
+  section{margin-bottom:34px;}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .sec-head h2{font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:600;margin:0;}
+  .sec-head .tag{font-size:.62rem;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+
+  .period-toggle{display:flex;gap:4px;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:3px;}
+  .period-toggle button{
+    background:transparent;color:var(--text2);border:none;padding:6px 12px;border-radius:6px;
+    font-size:.7rem;font-weight:600;font-family:'IBM Plex Mono',monospace;cursor:pointer;
+  }
+  .period-toggle button.active{background:var(--em);color:#04150e;}
+
+  .row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  input,select{
+    flex:1;min-width:140px;background:var(--panel2);
+    border:1px solid var(--border);color:var(--text);
+    padding:11px 13px;border-radius:10px;font-size:.87rem;font-family:'Inter',sans-serif;
+  }
+  input::placeholder{color:var(--text3);}
+  input:focus,select:focus{outline:none;border-color:var(--em);}
+  button{
+    background:linear-gradient(120deg,var(--em),var(--lime));
+    color:#04150e;border:none;padding:11px 18px;border-radius:10px;
+    font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;font-family:'Space Grotesk',sans-serif;
+  }
+  button:hover{filter:brightness(1.08);}
+  button.ghost{background:transparent;color:var(--red);padding:5px 9px;font-weight:600;font-size:.7rem;border:1px solid rgba(226,113,106,0.3);}
+  button.copy{background:rgba(52,211,153,0.14);color:var(--em-bright);padding:6px 10px;font-size:.68rem;border:1px solid rgba(52,211,153,0.3);}
+
+  .rank-badge{font-family:'IBM Plex Mono',monospace;font-size:.64rem;font-weight:700;color:#04150e;background:var(--em);border-radius:6px;padding:2px 7px;}
+  .idea-num{
+    font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--em-bright);
+    background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);
+    border-radius:20px;padding:2px 9px;display:inline-block;letter-spacing:.5px;
+  }
+  .idea-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;transition:.15s;}
+  .idea-card:hover{border-color:var(--border-hi);}
+  .idea-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+  .idea-text{font-size:.95rem;font-weight:600;margin-top:6px;font-family:'Space Grotesk',sans-serif;}
+  .idea-date{font-size:.66rem;color:var(--text3);margin-top:2px;}
+  .idea-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 10px;margin-top:14px;}
+  @media(min-width:600px){.idea-metrics{grid-template-columns:repeat(4,1fr);}}
+  .metric{min-width:0;}
+  .metric .n{font-family:'IBM Plex Mono',monospace;font-size:.98rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .metric .l{font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+  .idea-link{margin-top:12px;display:flex;gap:8px;align-items:center;background:#000;border-radius:8px;padding:8px 10px;}
+  .idea-link input{background:transparent;border:none;color:var(--text2);font-size:.7rem;padding:0;font-family:'IBM Plex Mono',monospace;}
+  .idea-link input:focus{outline:none;}
+  .score-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.06);margin-top:10px;overflow:hidden;}
+  .score-fill{height:100%;background:linear-gradient(90deg,var(--em),var(--lime));transition:width .5s;}
+
+  .chart{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;}
+  .chart-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .chart-label{width:120px;font-size:.72rem;color:var(--text2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .chart-track{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden;}
+  .chart-fill{height:100%;background:linear-gradient(90deg,var(--em),var(--lime));border-radius:5px;transition:width .6s;}
+  .chart-val{width:38px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text2);}
+
+  ul.sales{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;}
+  li.sale{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .sale-left .txt{font-size:.87rem;font-weight:600;font-family:'Space Grotesk',sans-serif;}
+  .sale-left .meta{font-size:.66rem;color:var(--text2);margin-top:2px;}
+  .sale-score{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--em-bright);background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;}
+  .sale-right{display:flex;align-items:center;gap:10px;}
+  .sale-amount{font-family:'IBM Plex Mono',monospace;color:var(--lime);font-weight:700;}
+
+  .empty{color:var(--text3);font-size:.8rem;font-style:italic;padding:10px 0;}
+
+  .algo-note{font-size:.75rem;color:var(--text2);line-height:1.6;background:var(--panel);border:1px dashed var(--border-hi);border-radius:12px;padding:14px 16px;margin-top:16px;}
+  .algo-note b{color:var(--em-bright);}
+
+  footer{text-align:center;font-size:.64rem;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:34px;}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:860px){
+    .sidebar{display:none;}
+    .topbar{display:flex;}
+    .bottomnav{display:block;}
+    .main-inner{padding:18px 16px 90px;}
+    .idea-metrics{grid-template-columns:repeat(2,1fr);}
+    .chart-label{width:88px;font-size:.66rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ---------- Sidebar (desktop) ---------- -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="11" fill="#0a0b0c"/>
+        <circle cx="24" cy="24" r="15" fill="none" stroke="#a6e34d" stroke-width="3" stroke-dasharray="66 100" stroke-linecap="round" transform="rotate(-40 24 24)"/>
+        <circle cx="24" cy="24" r="9.5" fill="none" stroke="#b5652c" stroke-width="2" opacity="0.85"/>
+        <circle cx="24" cy="24" r="3.4" fill="#34d399"/>
+      </svg>
+      <div>
+        <div class="name">CREO <span>×</span> Au Grès</div>
+        <div class="sub">Centre de contrôle</div>
+      </div>
+    </div>
+
+    <div class="navitem active" data-tab="overview"><span class="ic">◆</span> Vue d'ensemble</div>
+    <div class="navitem" data-tab="ideas"><span class="ic">✎</span> Idées</div>
+    <div class="navitem" data-tab="sales"><span class="ic">€</span> Ventes</div>
+    <div class="navitem" data-tab="analytics"><span class="ic">▤</span> Analytique</div>
+
+    <div class="sidebar-foot">
+      <div class="live-box"><span class="live-dot"></span>LIVE — <span id="lastUpdate">mise à jour…</span></div>
+    </div>
+  </aside>
+
+  <!-- ---------- Top bar (mobile) ---------- -->
+  <div class="topbar">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="11" fill="#0a0b0c"/>
+      <circle cx="24" cy="24" r="15" fill="none" stroke="#a6e34d" stroke-width="3" stroke-dasharray="66 100" stroke-linecap="round" transform="rotate(-40 24 24)"/>
+      <circle cx="24" cy="24" r="9.5" fill="none" stroke="#b5652c" stroke-width="2" opacity="0.85"/>
+      <circle cx="24" cy="24" r="3.4" fill="#34d399"/>
+    </svg>
+    <div class="name">CREO <span>×</span> Au Grès</div>
+    <div class="live-box"><span class="live-dot"></span><span id="lastUpdateMobile">…</span></div>
+  </div>
+
+  <main>
+    <div class="main-inner">
+
+      <!-- ================= OVERVIEW ================= -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="page-head">
+          <div class="eyebrow">Vue d'ensemble</div>
+          <h1>Tout ton suivi, en un coup d'œil</h1>
+          <p>Clics, ventes et commission à 5%, mis à jour en direct.</p>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="num mono" id="statClics">–</div><div class="label">Clics totaux</div></div>
+          <div class="stat"><div class="num mono" id="statIdees">0</div><div class="label">Idées actives</div></div>
+          <div class="stat"><div class="num mono" id="statVentes">0</div><div class="label">Ventes générées</div></div>
+          <div class="stat lime"><div class="num mono" id="statCommission">0 €</div><div class="label">Commission (5%)</div></div>
+          <div class="stat lime"><div class="num mono" id="statRevenue">0 €</div><div class="label">Revenu généré</div></div>
+          <div class="stat"><div class="num mono" id="statConv">0%</div><div class="label">Conversion globale</div></div>
+          <div class="stat"><div class="num mono" id="statBest">–</div><div class="label">Idée la + vue</div></div>
+          <div class="stat"><div class="num mono" id="statBestConv">–</div><div class="label">Meilleure conversion</div></div>
+        </div>
+
+        <section>
+          <div class="sec-head"><h2>Clics par période</h2><span class="tag">dès que tu te connectes</span></div>
+          <div class="strip">
+            <div class="stat"><div class="num mono" id="statWeek">–</div><div class="label">Cette semaine</div></div>
+            <div class="stat"><div class="num mono" id="statMonth">–</div><div class="label">Ce mois-ci</div></div>
+            <div class="stat"><div class="num mono" id="statYear">–</div><div class="label">Cette année</div></div>
+            <div class="stat"><div class="num mono" id="statToday">–</div><div class="label">Aujourd'hui</div></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="sec-head"><h2>Alertes</h2><span class="tag">généré automatiquement</span></div>
+          <div class="alerts" id="alerts"></div>
+        </section>
+      </div>
+
+      <!-- ================= IDEAS ================= -->
+      <div class="tab-panel" id="tab-ideas">
+        <div class="page-head">
+          <div class="eyebrow">Idées</div>
+          <h1>Mes idées de pub</h1>
+          <p>Chaque idée a son lien et son compteur individuel — clics, ventes, revenu, commission, score.</p>
+        </div>
+
+        <div class="row">
+          <input id="ideaInput" type="text" placeholder="Ex : story Insta avec démo tour de potier...">
+          <button onclick="addIdea()">Créer l'idée + le lien</button>
+        </div>
+        <div id="ideaList"></div>
+      </div>
+
+      <!-- ================= SALES ================= -->
+      <div class="tab-panel" id="tab-sales">
+        <div class="page-head">
+          <div class="eyebrow">Ventes</div>
+          <h1>Ventes de formations</h1>
+          <p>Calcul automatique de ta commission à 5% sur chaque vente enregistrée.</p>
+        </div>
+
+        <div class="row">
+          <input id="saleLabel" type="text" placeholder="Ex : Marie D. — atelier tournage">
+          <input id="saleAmount" type="number" min="0" step="0.01" placeholder="Montant €" style="max-width:110px;">
+          <select id="saleIdea"><option value="">— idée à l'origine ? —</option></select>
+          <button onclick="addSale()">Enregistrer la vente</button>
+        </div>
+        <ul class="sales" id="saleList"></ul>
+
+        <div class="algo-note">
+          <b>Comment le score est calculé :</b> pour chaque vente rattachée à une idée, l'algorithme combine
+          la <b>part de clics</b> de cette idée sur le total (poids 40%), son <b>taux de conversion</b> comparé
+          à la moyenne de toutes tes idées (poids 35%), et la <b>fraîcheur</b> de l'idée par rapport à la date
+          de la vente (poids 25%). Résultat : un score de 0 à 100, une probabilité estimée.
+          <br><br>
+          Depuis l'installation du script de suivi sur le site (page de confirmation de commande), les
+          <b>« ventes confirmées (site) »</b> visibles sur chaque idée (onglet Idées) sont une preuve directe —
+          contrairement au score ci-dessus, qui reste une estimation statistique quand le rattachement est fait à la main.
+        </div>
+      </div>
+
+      <!-- ================= ANALYTICS ================= -->
+      <div class="tab-panel" id="tab-analytics">
+        <div class="page-head">
+          <div class="eyebrow">Analytique</div>
+          <h1>Graphiques & projections</h1>
+          <p>Semaine, mois, année — et une estimation de ta commission à venir.</p>
+        </div>
+
+        <section>
+          <div class="sec-head">
+            <h2>Évolution des clics</h2>
+            <div class="period-toggle">
+              <button data-period="week" class="active" onclick="setClicksPeriod('week')">Semaine</button>
+              <button data-period="month" onclick="setClicksPeriod('month')">Mois</button>
+              <button data-period="year" onclick="setClicksPeriod('year')">Année</button>
+            </div>
+          </div>
+          <div class="chart" id="periodChart"></div>
+        </section>
+
+        <section>
+          <div class="sec-head"><h2>Classement des idées</h2><span class="tag">part des clics, en direct</span></div>
+          <div class="chart" id="chart"></div>
+        </section>
+
+        <section>
+          <div class="sec-head"><h2>Ventes & commissions par jour</h2><span class="tag">14 derniers jours</span></div>
+          <div class="chart" id="salesChart"></div>
+        </section>
+
+        <section>
+          <div class="sec-head"><h2>Estimation & projection</h2><span class="tag">tendance 14j → projection 30j</span></div>
+          <div class="chart" id="estimateBox"></div>
+          <div class="algo-note">
+            <b>Comment l'estimation est calculée :</b> l'algorithme prend ta <b>commission moyenne des 14 derniers jours</b>
+            et la projette sur 30 jours. La <b>tendance</b> compare tes 7 derniers jours aux 7 jours précédents.
+            C'est une <b>projection statistique</b>, pas une garantie.
+          </div>
+        </section>
+      </div>
+
+      <footer>CREO — dashboard généré pour Ilan · idées et ventes stockées localement sur cet appareil, clics comptés en direct</footer>
+    </div>
+  </main>
+</div>
+
+<!-- ---------- Bottom nav (mobile) ---------- -->
+<nav class="bottomnav">
+  <div class="bottomnav-row">
+    <div class="navitem active" data-tab="overview"><span class="ic">◆</span>Vue d'ens.</div>
+    <div class="navitem" data-tab="ideas"><span class="ic">✎</span>Idées</div>
+    <div class="navitem" data-tab="sales"><span class="ic">€</span>Ventes</div>
+    <div class="navitem" data-tab="analytics"><span class="ic">▤</span>Analytique</div>
+  </div>
+</nav>
+
+<script>
+  // ============================================================
+  // ⚠️ CONFIGURATION SUPABASE — remplace ces deux lignes par tes
+  // vraies valeurs (Project Settings > API dans Supabase), puis
+  // sauvegarde le fichier. Rien d'autre à toucher dans ce script.
+  // ============================================================
+  const SUPABASE_URL = 'https://TON-PROJET.supabase.co';
+  const SUPABASE_ANON_KEY = 'TA_CLE_ANON_PUBLIC';
+  const SUPABASE_SCHEMA = 'creo';
+  // ============================================================
+
+  const REDIRECT_BASE = 'redirect.html'; // adapte si hébergé ailleurs
+  const isConfigured = !SUPABASE_URL.includes('TON-PROJET') && !SUPABASE_ANON_KEY.includes('TA_CLE');
+
+  // ---------- Tab navigation ----------
+  function showTab(name){
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-'+name));
+    document.querySelectorAll('.navitem').forEach(n => n.classList.toggle('active', n.dataset.tab === name));
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  document.querySelectorAll('.navitem').forEach(n => {
+    n.addEventListener('click', () => showTab(n.dataset.tab));
+  });
+
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+  function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+
+  // ---------- Couche Supabase ----------
+  async function sb(table, { method='GET', query='', body=null, prefer=null } = {}){
+    const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+    const headers = {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+    };
+    // Un schéma autre que "public" doit être précisé via ces en-têtes
+    // (lecture : Accept-Profile / écriture : Content-Profile).
+    if(method === 'GET' || method === 'HEAD') headers['Accept-Profile'] = SUPABASE_SCHEMA;
+    else headers['Content-Profile'] = SUPABASE_SCHEMA;
+    if(prefer) headers['Prefer'] = prefer;
+
+    const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    if(!res.ok){
+      const text = await res.text().catch(()=> '');
+      throw new Error(`Supabase ${method} ${table} → ${res.status} ${text}`);
+    }
+    if(method === 'DELETE' || res.status === 204) return null;
+    return res.json();
+  }
+
+  const Ideas = {
+    list: () => sb('ideas', { query: '?select=*&order=num.desc' }),
+    create: (num, text) => sb('ideas', { method:'POST', body:{ num, text }, prefer:'return=representation' }),
+    remove: (id) => sb('ideas', { method:'DELETE', query:`?id=eq.${id}` }),
+  };
+  const Sales = {
+    list: () => sb('sales', { query: '?select=*&order=date_iso.desc' }),
+    create: (row) => sb('sales', { method:'POST', body:row, prefer:'return=representation' }),
+    remove: (id) => sb('sales', { method:'DELETE', query:`?id=eq.${id}` }),
+  };
+  const ClickEvents = {
+    list: () => sb('click_events', { query: '?select=idea_id,created_at&order=created_at.asc' }),
+  };
+  const ConfirmedSales = {
+    list: () => sb('confirmed_sales', { query: '?select=idea_id,created_at' }),
+  };
+
+  // ---------- État en mémoire (rechargé à chaque refreshAll) ----------
+  let ideas = [];
+  let sales = [];
+  let clickEvents = [];
+  let confirmedEvents = [];
+  let ideaClicks = {};
+  let ideaConfirmedSales = {};
+  let totalClicks = 0;
+  let lastFetchTime = null;
+  let clicksPeriod = 'week';
+
+  function computeDerived(){
+    ideaClicks = {};
+    clickEvents.forEach(e => { if(e.idea_id) ideaClicks[e.idea_id] = (ideaClicks[e.idea_id]||0) + 1; });
+    totalClicks = clickEvents.length;
+
+    ideaConfirmedSales = {};
+    confirmedEvents.forEach(e => { if(e.idea_id) ideaConfirmedSales[e.idea_id] = (ideaConfirmedSales[e.idea_id]||0) + 1; });
+  }
+
+  function nextIdeaNumber(){
+    return ideas.length ? Math.max(...ideas.map(i => i.num)) + 1 : 1;
+  }
+
+  function computeScore(idea, saleDateStr){
+    if(!idea) return null;
+    const clicksIdea = ideaClicks[idea.id] || 0;
+    const sumClicks = ideas.reduce((s,i)=> s + (ideaClicks[i.id]||0), 0) || 1;
+    const clickShare = clicksIdea / sumClicks;
+    const salesForIdea = sales.filter(s => s.idea_id === idea.id).length;
+    const convRateIdea = clicksIdea > 0 ? salesForIdea / clicksIdea : 0;
+    const convRateGlobal = sumClicks > 0 ? sales.length / sumClicks : 0;
+    const convRatio = convRateGlobal > 0 ? Math.min(convRateIdea / convRateGlobal, 3) / 3 : (convRateIdea > 0 ? 1 : 0.5);
+    const saleDate = saleDateStr ? new Date(saleDateStr) : new Date();
+    const ideaDate = new Date(idea.date_iso);
+    const daysDiff = Math.max(0, (saleDate - ideaDate) / 86400000);
+    const recency = Math.max(0, 1 - daysDiff/30);
+    const raw = clickShare*40 + convRatio*35 + recency*25;
+    return Math.round(Math.min(100, Math.max(0, raw)));
+  }
+
+  function fillIdeaSelect(){
+    const sel = document.getElementById('saleIdea');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— idée à l\'origine ? —</option>' +
+      ideas.map(i => `<option value="${i.id}">Idée ${pad2(i.num)} — ${escapeHtml(i.text.slice(0,32))}</option>`).join('');
+    sel.value = current;
+  }
+
+  // ---------- Périodes (semaine / mois / année) — calculées directement
+  // à partir des horodatages réels de chaque clic, donc exactes (pas
+  // une estimation par instantané quotidien comme avant). ----------
+  function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function startOfWeek(){ const d = new Date(); const day = d.getDay(); const diff = (day===0?-6:1-day); d.setDate(d.getDate()+diff); d.setHours(0,0,0,0); return d; }
+  function startOfMonth(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function startOfYear(){ const d = new Date(); return new Date(d.getFullYear(), 0, 1); }
+  function clicksSince(date){ return clickEvents.filter(e => new Date(e.created_at) >= date).length; }
+
+  function bucketByDay(events, days){
+    const map = {};
+    events.forEach(e => { const day = e.created_at.slice(0,10); map[day] = (map[day]||0)+1; });
+    const now = new Date();
+    const out = [];
+    for(let i=days-1;i>=0;i--){
+      const d = new Date(now); d.setDate(d.getDate()-i);
+      const key = d.toISOString().slice(0,10);
+      out.push({ label: d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}), value: map[key]||0 });
+    }
+    return out;
+  }
+
+  function bucketByWeek(events, weeks){
+    const map = {};
+    events.forEach(e => {
+      const dt = new Date(e.created_at);
+      const day = dt.getDay(); const diffToMonday = (day===0?-6:1-day);
+      const monday = new Date(dt); monday.setDate(dt.getDate()+diffToMonday); monday.setHours(0,0,0,0);
+      const key = monday.toISOString().slice(0,10);
+      map[key] = (map[key]||0) + 1;
+    });
+    const now = new Date();
+    const day = now.getDay(); const diffToMonday = (day===0?-6:1-day);
+    const thisMonday = new Date(now); thisMonday.setDate(now.getDate()+diffToMonday);
+    const out = [];
+    for(let i=weeks-1;i>=0;i--){
+      const mon = new Date(thisMonday); mon.setDate(thisMonday.getDate()-7*i);
+      const key = mon.toISOString().slice(0,10);
+      out.push({ label: 'Sem. ' + mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}), value: map[key]||0 });
+    }
+    return out;
+  }
+
+  function bucketByMonth(events, months){
+    const map = {};
+    events.forEach(e => { const key = e.created_at.slice(0,7); map[key] = (map[key]||0)+1; });
+    const now = new Date();
+    const out = [];
+    for(let i=months-1;i>=0;i--){
+      const dt = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      const key = dt.toISOString().slice(0,7);
+      out.push({ label: dt.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}), value: map[key]||0 });
+    }
+    return out;
+  }
+
+  function setClicksPeriod(period){
+    clicksPeriod = period;
+    document.querySelectorAll('.period-toggle button').forEach(b => b.classList.toggle('active', b.dataset.period === period));
+    renderPeriodChart();
+  }
+
+  function renderPeriodChart(){
+    const el = document.getElementById('periodChart');
+    let data;
+    if(clicksPeriod === 'week') data = bucketByDay(clickEvents, 7);
+    else if(clicksPeriod === 'month') data = bucketByWeek(clickEvents, 5);
+    else data = bucketByMonth(clickEvents, 12);
+
+    if(!data.some(d => d.value > 0)){
+      el.innerHTML = '<div class="empty">Pas encore de clic enregistré sur cette période — la courbe se remplira au fil des visites.</div>';
+      return;
+    }
+    const max = Math.max(1, ...data.map(d => d.value));
+    el.innerHTML = data.map(d => {
+      const pct = d.value > 0 ? Math.max(4, Math.round((d.value/max)*100)) : 0;
+      return `
+        <div class="chart-row">
+          <div class="chart-label">${d.label}</div>
+          <div class="chart-track"><div class="chart-fill" style="width:${pct}%"></div></div>
+          <div class="chart-val mono">${d.value}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function updateHistoryStats(){
+    document.getElementById('statToday').textContent = clicksSince(startOfToday());
+    document.getElementById('statWeek').textContent = clicksSince(startOfWeek());
+    document.getElementById('statMonth').textContent = clicksSince(startOfMonth());
+    document.getElementById('statYear').textContent = clicksSince(startOfYear());
+  }
+
+  // ---------- Ventes par jour + estimation (basées sur date_iso réel) ----------
+  function salesDailyAgg(){
+    const map = {};
+    sales.forEach(s => {
+      const day = (s.date_iso || '').slice(0,10);
+      if(!day) return;
+      if(!map[day]) map[day] = { revenue:0, commission:0, count:0 };
+      map[day].revenue += Number(s.amount);
+      map[day].commission += Number(s.amount) * 0.05;
+      map[day].count += 1;
+    });
+    return map;
+  }
+
+  function last14Days(){
+    const out = []; const now = new Date();
+    for(let i=13;i>=0;i--){ const d = new Date(now); d.setDate(d.getDate()-i); out.push(d.toISOString().slice(0,10)); }
+    return out;
+  }
+
+  function renderSalesChart(){
+    const el = document.getElementById('salesChart');
+    const map = salesDailyAgg();
+    const days = last14Days();
+    const values = days.map(d => map[d] ? map[d].commission : 0);
+    if(!values.some(v => v > 0)){
+      el.innerHTML = '<div class="empty">Aucune vente datée pour l\'instant — dès que tu enregistres une vente, elle apparaîtra ici jour par jour.</div>';
+      return;
+    }
+    const max = Math.max(1, ...values);
+    el.innerHTML = days.map((d,i) => {
+      const val = values[i];
+      const pct = val > 0 ? Math.max(4, Math.round((val/max)*100)) : 0;
+      const label = new Date(d+'T12:00:00').toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'});
+      return `
+        <div class="chart-row">
+          <div class="chart-label">${label}</div>
+          <div class="chart-track"><div class="chart-fill" style="width:${pct}%"></div></div>
+          <div class="chart-val mono">${val.toFixed(2)}€</div>
+        </div>`;
+    }).join('');
+  }
+
+  function sumCommissionWindow(n, offset){
+    const map = salesDailyAgg();
+    const now = new Date();
+    let sum = 0;
+    for(let i=offset;i<offset+n;i++){
+      const d = new Date(now); d.setDate(d.getDate()-i);
+      const key = d.toISOString().slice(0,10);
+      if(map[key]) sum += map[key].commission;
+    }
+    return sum;
+  }
+
+  function computeEstimate(){
+    const last7 = sumCommissionWindow(7,0);
+    const prev7 = sumCommissionWindow(7,7);
+    const last14 = sumCommissionWindow(14,0);
+    const avgDaily = last14/14;
+    const monthlyEstimate = avgDaily*30;
+    let trendPct = prev7 > 0 ? ((last7-prev7)/prev7)*100 : (last7 > 0 ? 100 : 0);
+    return { last7, prev7, monthlyEstimate, trendPct };
+  }
+
+  function renderEstimate(){
+    const box = document.getElementById('estimateBox');
+    const est = computeEstimate();
+    const hasData = est.last7 > 0 || est.prev7 > 0;
+    if(!hasData){
+      box.innerHTML = '<div class="empty">Pas encore assez de ventes datées pour calculer une estimation fiable.</div>';
+      return;
+    }
+    const trendLabel = (est.trendPct >= 0 ? '+' : '') + est.trendPct.toFixed(0) + '%';
+    const arrow = est.trendPct > 5 ? '↗' : est.trendPct < -5 ? '↘' : '→';
+    box.innerHTML = `
+      <div class="chart-row">
+        <div class="chart-label">7 derniers jours</div>
+        <div class="chart-track"><div class="chart-fill" style="width:${Math.max(4,Math.min(100,Math.round((est.last7/Math.max(1,Math.max(est.last7,est.prev7)))*100)))}%"></div></div>
+        <div class="chart-val mono">${est.last7.toFixed(2)}€</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">7 jours précédents</div>
+        <div class="chart-track"><div class="chart-fill" style="width:${Math.max(4,Math.min(100,Math.round((est.prev7/Math.max(1,Math.max(est.last7,est.prev7)))*100)))}%"></div></div>
+        <div class="chart-val mono">${est.prev7.toFixed(2)}€</div>
+      </div>
+      <div class="idea-date" style="margin-top:10px;">${arrow} Tendance ${trendLabel} · projection 30 jours : <b style="color:var(--lime)">${est.monthlyEstimate.toFixed(0)} €</b> de commission estimée</div>
+    `;
+  }
+
+  function renderChart(){
+    const el = document.getElementById('chart');
+    if(!ideas.length){ el.innerHTML = '<div class="empty">Crée une idée pour voir le classement.</div>'; return; }
+    const sorted = [...ideas].sort((a,b)=> (ideaClicks[b.id]||0) - (ideaClicks[a.id]||0));
+    const max = Math.max(1, ...sorted.map(i => ideaClicks[i.id]||0));
+    el.innerHTML = sorted.map((idea,i) => {
+      const c = ideaClicks[idea.id] || 0;
+      const pct = Math.round((c/max)*100);
+      return `
+        <div class="chart-row">
+          <span class="rank-badge">#${i+1}</span>
+          <div class="chart-label">Idée ${pad2(idea.num)} — ${escapeHtml(idea.text)}</div>
+          <div class="chart-track"><div class="chart-fill" style="width:${pct}%"></div></div>
+          <div class="chart-val mono">${c}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderIdeas(){
+    const wrap = document.getElementById('ideaList');
+    document.getElementById('statIdees').textContent = ideas.length;
+    wrap.innerHTML = ideas.length ? '' : '<div class="empty">Aucune idée pour l\'instant.</div>';
+
+    const sorted = [...ideas].sort((a,b)=> (ideaClicks[b.id]||0) - (ideaClicks[a.id]||0));
+    document.getElementById('statBest').textContent = sorted.length ? 'Idée ' + pad2(sorted[0].num) : '–';
+
+    const displayOrder = [...ideas].sort((a,b)=> b.num - a.num);
+    const rankOf = {};
+    sorted.forEach((idea,i) => { rankOf[idea.id] = i+1; });
+    const sumClicksAll = ideas.reduce((s,i)=> s + (ideaClicks[i.id]||0), 0);
+
+    displayOrder.forEach(idea => {
+      const clicks = ideaClicks[idea.id] || 0;
+      const salesForIdea = sales.filter(s => s.idea_id === idea.id);
+      const conv = clicks > 0 ? ((salesForIdea.length/clicks)*100) : 0;
+      const link = `${REDIRECT_BASE}?id=${idea.id}`;
+      const score = computeScore(idea, new Date().toISOString());
+
+      const revenue = salesForIdea.reduce((s,x)=> s + Number(x.amount), 0);
+      const commission = revenue * 0.05;
+      const clickShare = sumClicksAll > 0 ? (clicks/sumClicksAll*100) : 0;
+      const daysActive = Math.max(1, Math.floor((new Date() - new Date(idea.date_iso)) / 86400000));
+      const velocity = clicks / daysActive;
+      const confirmedSales = ideaConfirmedSales[idea.id] || 0;
+      const missingConfirmed = confirmedSales > salesForIdea.length;
+
+      const div = document.createElement('div');
+      div.className = 'idea-card';
+      div.innerHTML = `
+        <div class="idea-top">
+          <div>
+            <span class="idea-num">IDÉE ${pad2(idea.num)}</span>
+            <span class="rank-badge" style="margin-left:6px;">#${rankOf[idea.id]}</span>
+            <div class="idea-text">${escapeHtml(idea.text)}</div>
+            <div class="idea-date">créée le ${new Date(idea.date_iso).toLocaleDateString('fr-FR')} · active depuis ${daysActive} j</div>
+          </div>
+          <button class="ghost" onclick="removeIdea('${idea.id}')">Suppr</button>
+        </div>
+        <div class="idea-metrics">
+          <div class="metric"><div class="n">${clicks}</div><div class="l">Clics (compteur individuel)</div></div>
+          <div class="metric"><div class="n">${salesForIdea.length}</div><div class="l">Ventes liées</div></div>
+          <div class="metric"><div class="n">${conv.toFixed(1)}%</div><div class="l">Taux conversion</div></div>
+          <div class="metric"><div class="n">${score}/100</div><div class="l">Score potentiel</div></div>
+          <div class="metric"><div class="n">${revenue.toFixed(0)} €</div><div class="l">Revenu généré</div></div>
+          <div class="metric"><div class="n">${commission.toFixed(2)} €</div><div class="l">Commission générée</div></div>
+          <div class="metric"><div class="n">${clickShare.toFixed(1)}%</div><div class="l">Part des clics</div></div>
+          <div class="metric"><div class="n">${velocity.toFixed(1)}</div><div class="l">Clics / jour</div></div>
+          <div class="metric"><div class="n" style="${confirmedSales>0?'color:var(--lime)':''}">${confirmedSales}</div><div class="l">Ventes confirmées (site)</div></div>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:${score}%"></div></div>
+        ${missingConfirmed ? `<div class="algo-note" style="margin-top:12px;border-color:rgba(224,193,90,0.4);"><b>⚠ ${confirmedSales - salesForIdea.length} vente(s) confirmée(s) par le site</b> mais absente(s) de l'onglet Ventes — pense à les ajouter pour que ta commission totale soit exacte.</div>` : ''}
+        <div class="idea-link">
+          <input readonly value="${link}" onclick="this.select()">
+          <button class="copy" onclick="copyLink('${link}', this)">Copier</button>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+
+  function renderSales(){
+    const ul = document.getElementById('saleList');
+    const total = sales.reduce((s,x)=>s+Number(x.amount),0);
+    document.getElementById('statVentes').textContent = sales.length;
+    document.getElementById('statCommission').textContent = (total*0.05).toFixed(2) + ' €';
+
+    const sumClicks = ideas.reduce((s,i)=> s + (ideaClicks[i.id]||0), 0);
+    const convGlobal = sumClicks > 0 ? (sales.length/sumClicks*100) : 0;
+    document.getElementById('statConv').textContent = convGlobal.toFixed(1) + '%';
+    document.getElementById('statRevenue').textContent = total.toFixed(0) + ' €';
+
+    let bestConvIdea = null, bestConvRate = -1;
+    ideas.forEach(idea => {
+      const c = ideaClicks[idea.id] || 0;
+      if(c === 0) return;
+      const s = sales.filter(x => x.idea_id === idea.id).length;
+      const rate = s / c;
+      if(rate > bestConvRate){ bestConvRate = rate; bestConvIdea = idea; }
+    });
+    document.getElementById('statBestConv').textContent = bestConvIdea
+      ? `Idée ${pad2(bestConvIdea.num)} (${(bestConvRate*100).toFixed(1)}%)`
+      : '–';
+
+    ul.innerHTML = sales.length ? '' : '<li class="empty">Aucune vente enregistrée.</li>';
+    sales.forEach(sale => {
+      const idea = ideas.find(i => i.id === sale.idea_id);
+      const li = document.createElement('li');
+      li.className = 'sale';
+      li.innerHTML = `
+        <div class="sale-left">
+          <div class="txt">${escapeHtml(sale.label || 'Vente')}</div>
+          <div class="meta">${new Date(sale.date_iso).toLocaleDateString('fr-FR')} — commission ${(sale.amount*0.05).toFixed(2)} €${idea ? ' — via Idée '+pad2(idea.num) : ''}</div>
+          ${idea ? `<div class="sale-score">Score d'attribution : ${sale.score}/100</div>` : ''}
+        </div>
+        <div class="sale-right">
+          <div class="sale-amount">${Number(sale.amount).toFixed(2)} €</div>
+          <button class="ghost" onclick="removeSale('${sale.id}')">Suppr</button>
+        </div>
+      `;
+      ul.appendChild(li);
+    });
+  }
+
+  function renderAlerts(){
+    const box = document.getElementById('alerts');
+    const alerts = [];
+    const now = new Date();
+
+    ideas.forEach(idea => {
+      const days = Math.floor((now - new Date(idea.date_iso)) / 86400000);
+      const clicks = ideaClicks[idea.id] || 0;
+      if(clicks === 0 && days >= 3){
+        alerts.push({type:'warn', icon:'!', html:`<b>Idée ${pad2(idea.num)}</b> <span>(${escapeHtml(idea.text.slice(0,32))}) n'a reçu aucun clic depuis ${days} jours — vérifie que le lien est bien partagé.</span>`});
+      }
+      if(clicks >= 20){
+        const s = sales.filter(x=>x.idea_id===idea.id).length;
+        if(s === 0){
+          alerts.push({type:'warn', icon:'!', html:`<b>Idée ${pad2(idea.num)}</b> <span>a généré ${clicks} clics mais aucune vente enregistrée — vérifie auprès d'Au Grès du Sud si des ventes sont passées sans être notées.</span>`});
+        }
+      }
+      const confirmed = ideaConfirmedSales[idea.id] || 0;
+      const logged = sales.filter(x=>x.idea_id===idea.id).length;
+      if(confirmed > logged){
+        alerts.push({type:'warn', icon:'!', html:`<b>Idée ${pad2(idea.num)}</b> <span>: le site a confirmé ${confirmed} vente${confirmed>1?'s':''} via ton lien, mais seulement ${logged} enregistrée${logged>1?'s':''} ici — ajoute la ou les ventes manquantes.</span>`});
+      }
+    });
+
+    const unassigned = sales.filter(s => !s.idea_id).length;
+    if(unassigned > 0){
+      alerts.push({type:'info', icon:'i', html:`<b>${unassigned} vente${unassigned>1?'s':''}</b> <span>non rattachée${unassigned>1?'s':''} à une idée — leur score d'attribution ne peut pas être calculé.</span>`});
+    }
+
+    if(ideas.length){
+      const sorted = [...ideas].sort((a,b)=> (ideaClicks[b.id]||0)-(ideaClicks[a.id]||0));
+      if((ideaClicks[sorted[0].id]||0) > 0){
+        alerts.push({type:'good', icon:'✓', html:`<b>Idée ${pad2(sorted[0].num)}</b> <span>est ta meilleure idée avec ${ideaClicks[sorted[0].id]} clics.</span>`});
+      }
+    }
+
+    const totalCommission = sales.reduce((s,x)=>s+Number(x.amount),0)*0.05;
+    const milestones = [50,100,200,500,1000];
+    const reached = milestones.filter(m => totalCommission >= m).pop();
+    if(reached){
+      alerts.push({type:'good', icon:'✓', html:`<span>Tu as franchi les</span> <b>${reached} € de commission cumulée</b>`});
+    }
+
+    box.innerHTML = alerts.length
+      ? alerts.map(a => `<div class="alert ${a.type}"><div class="ico mono">${a.icon}</div><div class="body">${a.html}</div></div>`).join('')
+      : '<div class="alert info"><div class="ico mono">i</div><div class="body"><span>Aucune alerte pour l\'instant — crée des idées et enregistre des ventes pour activer les analyses automatiques.</span></div></div>';
+  }
+
+  function updateLastUpdateLabel(){
+    if(!lastFetchTime) return;
+    const secs = Math.floor((Date.now() - lastFetchTime)/1000);
+    const label = secs < 5 ? 'à l\'instant' : `il y a ${secs}s`;
+    document.getElementById('lastUpdate').textContent = label;
+    const m = document.getElementById('lastUpdateMobile');
+    if(m) m.textContent = label;
+  }
+
+  function showConfigBanner(message){
+    const box = document.getElementById('alerts');
+    box.innerHTML = `<div class="alert warn"><div class="ico mono">!</div><div class="body"><b>Supabase non connecté</b> <span>${message}</span></div></div>`;
+  }
+
+  async function refreshAll(){
+    if(!isConfigured){
+      showConfigBanner("Remplace SUPABASE_URL et SUPABASE_ANON_KEY tout en haut du script du dashboard, puis recharge la page.");
+      return;
+    }
+    try{
+      [ideas, sales, clickEvents, confirmedEvents] = await Promise.all([
+        Ideas.list(), Sales.list(), ClickEvents.list(), ConfirmedSales.list()
+      ]);
+    }catch(e){
+      console.error(e);
+      showConfigBanner("Impossible de joindre Supabase — vérifie l'URL, la clé anon, que le schéma 'creo' est bien exposé dans Project Settings > API, et ta connexion internet. Détail : " + e.message);
+      return;
+    }
+    document.getElementById('statClics').textContent = clickEvents.length;
+    lastFetchTime = Date.now();
+
+    computeDerived();
+    updateHistoryStats();
+    fillIdeaSelect();
+    renderPeriodChart();
+    renderChart();
+    renderIdeas();
+    renderSales();
+    renderSalesChart();
+    renderEstimate();
+    renderAlerts();
+    updateLastUpdateLabel();
+  }
+
+  async function addIdea(){
+    const input = document.getElementById('ideaInput');
+    const text = input.value.trim();
+    if(!text) return;
+    try{
+      await Ideas.create(nextIdeaNumber(), text);
+      input.value = '';
+      refreshAll();
+    }catch(e){ alert("Erreur lors de la création de l'idée : " + e.message); }
+  }
+
+  async function removeIdea(id){
+    try{ await Ideas.remove(id); refreshAll(); }
+    catch(e){ alert("Erreur lors de la suppression : " + e.message); }
+  }
+
+  async function addSale(){
+    const labelInput = document.getElementById('saleLabel');
+    const amountInput = document.getElementById('saleAmount');
+    const ideaSelect = document.getElementById('saleIdea');
+    const amount = parseFloat(amountInput.value);
+    if(!amount || amount <= 0) return;
+    const ideaId = ideaSelect.value || null;
+    const idea = ideas.find(i => i.id === ideaId);
+    const now = new Date();
+    const score = idea ? computeScore(idea, now.toISOString()) : null;
+    try{
+      await Sales.create({
+        label: labelInput.value.trim(),
+        amount,
+        date_iso: now.toISOString(),
+        idea_id: ideaId,
+        score,
+        source: 'manual',
+      });
+      labelInput.value = '';
+      amountInput.value = '';
+      ideaSelect.value = '';
+      refreshAll();
+    }catch(e){ alert("Erreur lors de l'enregistrement de la vente : " + e.message); }
+  }
+
+  async function removeSale(id){
+    try{ await Sales.remove(id); refreshAll(); }
+    catch(e){ alert("Erreur lors de la suppression : " + e.message); }
+  }
+
+  function copyLink(link, btn){
+    const abs = new URL(link, window.location.href).href;
+    navigator.clipboard.writeText(abs).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copié !';
+      setTimeout(()=> btn.textContent = old, 1200);
+    });
+  }
+
+  refreshAll();
+  setInterval(refreshAll, 15000);
+  setInterval(updateLastUpdateLabel, 1000);
+</script>
+</body>
+</html>
